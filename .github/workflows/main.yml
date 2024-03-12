@@ -3,10 +3,10 @@ name: ci
 on:
   push:
     branches:
-      - "main"
+      - main
 
 jobs:
-  docker:
+  build_and_push_image:  # New job name
     runs-on: self-hosted
     services:
       registry:
@@ -26,8 +26,18 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: true  # Assuming you want to push to the local registry
           tags: localhost:5000/name/app:latest
       - name: Inspect
         run: |
           docker buildx imagetools inspect localhost:5000/name/app:latest
+
+  deploy_to_kubernetes_cluster:  # Assuming the previous job successfully builds the image
+    needs: build_and_push_image  # Updated dependency
+    name: Set Kubernetes Context
+    uses: azure/k8s-set-context@v1
+    with:
+      method: kubeconfig
+      kubeconfig: ${{ secrets.KUBE_CONFIG_SECURE }}  # Use a secure way to store kubeconfig
+
+    # ... (Steps to deploy the application to the Kubernetes cluster)
