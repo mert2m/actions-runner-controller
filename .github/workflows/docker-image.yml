@@ -1,18 +1,47 @@
-name: Docker Image CI
+name: Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - develop
 
 jobs:
 
-  build:
+  build_docker_image:
+      name: Build Docker Image
+      runs-on: self-hosted
+      steps:
+        - name: Checkout Repo
+          uses: actions/checkout@v2
+        - name: Build the tagged Docker image
+          run: docker build --target dev -t your_org/customer-service-backend:${{ github.sha }} .
 
+  push_docker_image_to_github_packages:
+    name: Push Docker Image to Github Packages
+    needs: build_docker_image
     runs-on: self-hosted
-
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: your_org/customer-service-backend:${{ github.sha }}
+
+  deploy_to_kubernetes_cluster:
+    name: Deploy to Kubernetes Cluster
+    needs: push_docker_image_to_github_packages
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
+      - name: Deploy to Cluster
+        run: |
+          sed -i'' -e 's/IMAGE_LABEL/${{ github.sha }}/g' deployment.yml
+          kubectl apply -f deployment.yml
