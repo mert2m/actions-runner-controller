@@ -1,4 +1,4 @@
-name: ci
+name: Build and Deploy
 
 on:
   push:
@@ -6,38 +6,42 @@ on:
       - main
 
 jobs:
-  build_and_push_image:  # New job name
+
+  build_docker_image:
+      name: Build Docker Image
+      runs-on: self-hosted
+      steps:
+        - name: Checkout Repo
+          uses: actions/checkout@v2
+        - name: Build the tagged Docker image
+          run: docker build --target dev -t your_org/customer-service-backend:${{ github.sha }} .
+
+  push_docker_image_to_github_packages:
+    name: Push Docker Image to Github Packages
+    needs: build_docker_image
     runs-on: self-hosted
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Push Docker Image
+        uses: docker/build-push-action@v2
         with:
-          driver-opts: network=host
-      - name: Build and push to local registry
-        uses: docker/build-push-action@v5
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: your_org/customer-service-backend:${{ github.sha }}
+
+  deploy_to_kubernetes_cluster:
+    name: Deploy to Kubernetes Cluster
+    needs: push_docker_image_to_github_packages
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v1
         with:
-          context: .
-          push: true  # Assuming you want to push to the local registry
-          tags: localhost:5000/name/app:latest
-      - name: Inspect
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
+      - name: Deploy to Cluster
         run: |
-          docker buildx imagetools inspect localhost:5000/name/app:latest
-
-  deploy_to_kubernetes_cluster:  # Assuming the previous job successfully builds the image
-    needs: build_and_push_image  # Updated dependency
-    name: Set Kubernetes Context
-    uses: azure/k8s-set-context@v1
-    with:
-      method: kubeconfig
-      kubeconfig: ${{ secrets.KUBE_CONFIG_SECURE }}  # Use a secure way to store kubeconfig
-
-    # ... (Steps to deploy the application to the Kubernetes cluster)
+          sed -i'' -e 's/IMAGE_LABEL/${{ github.sha }}/g' deployment.yml
+          kubectl apply -f deployment.yml
