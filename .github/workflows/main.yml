@@ -6,35 +6,26 @@ on:
       - main
 
 jobs:
-  build-and-push:
-    name: Build and Push Image
+  build-and-deploy:
     runs-on: self-hosted
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-    - name: Build & push docker image
-      env:
-        TAG: ${{ steps.date.outputs.date }} 
-      run: |
-        docker build -t mertpolatace/api:$TAG .
-        echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push mertpolatace/api:$TAG
-  
-  deploy:
-    name: Deploy to Kubernetes
-    needs: build-and-push
-    runs-on: self-hosted
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Create kubeconfig
-      run: |
-        mkdir ${HOME}/.kube
-        echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${HOME}/.kube/config
-    - name: Use context
-      run: kubectl config use-context kind-kind-for-ingress
-    - name: Deploy to K8s
-      run: kubectl apply -f .k8s/
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 -t mertpolatace/api:$GITHUB_SHA .
+          docker push mertpolatace/api:$GITHUB_SHA
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f .k8s/
