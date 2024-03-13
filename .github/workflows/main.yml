@@ -1,8 +1,9 @@
-name: OctoBay API - Test, Build, Push, Deploy
+name: Build and Deploy
 
 on:
   push:
-    - main
+    branches:
+      - main
 
 jobs:
   build-and-push:
