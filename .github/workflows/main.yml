@@ -19,9 +19,9 @@ jobs:
       env:
         TAG: ${{ steps.date.outputs.date }} 
       run: |
-        docker build -t octobay/api:$TAG .
+        docker build -t mertpolatace/api:$TAG .
         echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push octobay/api:$TAG
+        docker push mertpolatace/api:$TAG
   
   deploy:
     name: Deploy to Kubernetes
