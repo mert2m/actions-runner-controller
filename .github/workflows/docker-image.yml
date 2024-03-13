@@ -24,6 +24,17 @@ jobs:
     - name: Push Docker image to registry
       run: docker push localhost:5001/my-image-name:$(date +%s)
 
-    - name: Deploy to Kubernetes
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: self-hosted
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Create kubeconfig
       run: |
-          kubectl apply -f .k8s/
+        mkdir ${HOME}/.kube
+        echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${HOME}/.kube/config
+    - name: Use context
+      run: kubectl config use-context octobay-api
+    - name: Deploy to K8s
+      run: kubectl apply -f .k8s/
