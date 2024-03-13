@@ -1,47 +1,39 @@
-name: Build and Deploy
+name: OctoBay API - Test, Build, Push, Deploy
 
 on:
   push:
-    branches:
-      - main
+    - main
 
 jobs:
-
-  build_docker_image:
-      name: Build Docker Image
-      runs-on: self-hosted
-      steps:
-        - name: Checkout Repo
-          uses: actions/checkout@v2
-        - name: Build the tagged Docker image
-          run: docker build --target dev -t your_org/customer-service-backend:${{ github.sha }} .
-
-  push_docker_image_to_github_packages:
-    name: Push Docker Image to Github Packages
-    needs: build_docker_image
+  build-and-push:
+    name: Build and Push Image
     runs-on: self-hosted
     steps:
-      - name: Push Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          registry: docker.pkg.github.com
-          repository: your_org/customer-service-backend:${{ github.sha }}
-
-  deploy_to_kubernetes_cluster:
-    name: Deploy to Kubernetes Cluster
-    needs: push_docker_image_to_github_packages
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+    - name: Build & push docker image
+      env:
+        TAG: ${{ steps.date.outputs.date }} 
+      run: |
+        docker build -t octobay/api:$TAG .
+        echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+        docker push octobay/api:$TAG
+  
+  deploy:
+    name: Deploy to Kubernetes
+    needs: build-and-push
     runs-on: self-hosted
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v2
-      - name: Set Kubernetes Context
-        uses: azure/k8s-set-context@v1
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
-      - name: Deploy to Cluster
-        run: |
-          sed -i'' -e 's/IMAGE_LABEL/${{ github.sha }}/g' deployment.yml
-          kubectl apply -f deployment.yml
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Create kubeconfig
+      run: |
+        mkdir ${HOME}/.kube
+        echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${HOME}/.kube/config
+    - name: Use context
+      run: kubectl config use-context kind-kind-for-ingress
+    - name: Deploy to K8s
+      run: kubectl apply -f .k8s/
