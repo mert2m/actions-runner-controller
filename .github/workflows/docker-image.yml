@@ -10,7 +10,7 @@ jobs:
 
   build_and_deploy:
 
-    runs-on: self-hosted
+    runs-on: linux ghcr.io 
 
     steps:
     - uses: actions/checkout@v3
@@ -35,6 +35,6 @@ jobs:
         mkdir ${HOME}/.kube
         echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${HOME}/.kube/config
     - name: Use context
-      run: kubectl config use-context octobay-api
+      run: kubectl config use-context 
     - name: Deploy to K8s
       run: kubectl apply -f .k8s/
