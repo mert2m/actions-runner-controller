@@ -1,16 +1,15 @@
-name: publish
+name: Docker Iage CI for GHCR
 
-on: [push]
+on: 
+  push
 
 jobs:
-  publish-hello-world-image:
+  build_and_publish:
     runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Build the hello-world Docker image
-      run: |
-        echo $GHCR_PAT | docker login ghcr.io -u YourAccountOrGHOrgaNameHere --password-stdin
-      env:
-        GHCR_PAT: ${{ secrets.GHCR_PAT }}
+    steps: 
+      - uses: actions/checkout@v3
+      - name: Build and push the image
+        run : |
+          docker login --username mert2m --password ${{ secrets.GH_PAT }} ghcr.io
+          docker build . --tag ghcr.io/mert2m/actoins-runner-controller:latest
+          docker push ghcr.io/mert2m/actoins-runner-controller:latest
