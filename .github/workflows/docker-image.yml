@@ -1,27 +1,16 @@
-name: Push Docker Image to GHCR
+name: publish
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+on: [push]
 
 jobs:
-  push-store-image:
+  push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}  # Use the PAT here
-
-      - name: Build and push Docker image
-        run: |
-          docker build . --tag ghcr.io/${{ github.repository_owner }}/store:latest
-          docker push ghcr.io/${{ github.repository_owner }}/store:latest
+    - name: Build the hello-world Docker image
+      run: |
+        echo $GHCR_PAT | docker login ghcr.io -u mert2m --password-stdin
+      env:
+        GHCR_PAT: ${{ secrets.GHCR_PAT }}
