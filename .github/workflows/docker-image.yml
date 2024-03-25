@@ -13,3 +13,16 @@ jobs:
           docker login --username mert2m --password ${{ secrets.GH_PAT }} ghcr.io
           docker build . --tag ghcr.io/mert2m/actions-runner-controller:latest
           docker push ghcr.io/mert2m/actions-runner-controller:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Kubectl
+        uses: azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+      - name: Deploy
+        run: |
+          kubectl apply -f kubernetes/task-deployment-service.yaml
