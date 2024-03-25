@@ -27,4 +27,6 @@ jobs:
           kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
       - name: Deploy to Cluster
         run: |
-          kubectl apply -f deployment.yml
+          sed -i 's/IMAGE_LABEL/'"${{ github.sha }}"'/' deployment.yml
+      - name: Deploy to Cluster
+        run: kubectl apply -f deployment.yml
