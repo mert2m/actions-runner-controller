@@ -29,5 +29,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/actions-runner-controller:${{ env.tag }}
+            ghcr.io/${{ github.repository }}:${{ env.tag }}
 
