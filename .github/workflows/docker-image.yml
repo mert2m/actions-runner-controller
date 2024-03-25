@@ -18,15 +18,17 @@ jobs:
     name: Deploy to Kubernetes
     runs-on: self-hosted
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Create kubeconfig
-      run: |
-        mkdir -p $HOME/.kube/
-        cp /Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml $HOME/.kube/config
-        kubectl config view
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Create kubeconfig (**Ensure this step creates the file successfully**)
+        run: |
+          # Fix the script from the previous error to create the file
+          # (touch or modify the script to write the decoded secret)
+          mkdir -p $HOME/.kube/
+          cp /Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml $HOME/.kube/config
+          kubectl config view
 
-    - name: Use context
-      run: kubectl config use-context kind-kind-for-ingress 
-    - name: Deploy to K8s
-      run: kubectl apply -f .k8s/
+      - name: Use context
+        run: kubectl config use-context kind-kind-for-ingress 
+      - name: Deploy to K8s
+        run: kubectl apply -f .k8s/
