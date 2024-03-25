@@ -15,24 +15,14 @@ jobs:
           docker push ghcr.io/mert2m/actions-runner-controller:latest
 
   deploy:
-    name: Deploy to Kubernetes
     runs-on: self-hosted
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Install kubectl
-      uses: azure/kubectl@v1
-      with:
-        version: latest
-
-    - name: Create kubeconfig
-      run: |
-        mkdir ${HOME}/.kube
-        echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${HOME}/.kube/config
-
-    - name: Use context
-      run: kubectl config use-context kind-kind-for-ingress
-
-    - name: Deploy to K8s
-      run: kubectl apply -f .k8s/
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Kubectl
+        uses: azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+      - name: Deploy
+        run: |
+          kubectl apply -f kubernetes/task-deployment-service.yaml
