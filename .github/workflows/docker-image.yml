@@ -15,20 +15,14 @@ jobs:
           docker push ghcr.io/mert2m/actions-runner-controller:latest
 
   deploy:
-    name: Deploy to Kubernetes
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Create kubeconfig (**Ensure this step creates the file successfully**)
+      - name: Set up Kubectl
+        uses: azure/k8s-set-context@v1
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+      - name: Deploy
         run: |
-          rm -rf /Users/mertpolat/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml  # Remove the file (if not required)
-          mkdir -p $HOME/.kube/  # Create the directory if it doesn't exist
-          touch $HOME/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml  # Create an empty file (optional, but ensures a file exists)
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml
-
-
-      - name: Use context
-        run: kubectl config use-context kind-kind-for-ingress 
-      - name: Deploy to K8s
-        run: kubectl apply -f ../.k8s/
+          kubectl apply -f kubernetes/deployment.yaml
