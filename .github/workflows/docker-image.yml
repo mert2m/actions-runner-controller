@@ -22,11 +22,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Create kubeconfig (**Ensure this step creates the file successfully**)
         run: |
-          # Fix the script from the previous error to create the file
-          # (touch or modify the script to write the decoded secret)
-          mkdir -p $HOME/.kube/
-          cp /Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml $HOME/.kube/config
-          kubectl config view
+          mkdir -p $HOME/.kube/  # Create the directory if it doesn't exist
+          touch $HOME/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml  # Create an empty file (optional, but ensures a file exists)
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml
+
 
       - name: Use context
         run: kubectl config use-context kind-kind-for-ingress 
