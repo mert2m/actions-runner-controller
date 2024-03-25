@@ -22,7 +22,6 @@ jobs:
       uses: actions/checkout@v2
     - name: Create kubeconfig
       run: |
-        run: |
         mkdir -p $HOME/.kube/
         cp /Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml $HOME/.kube/config
         kubectl config view
