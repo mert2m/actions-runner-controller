@@ -3,7 +3,7 @@ name: publish
 on: [push]
 
 jobs:
-  push:
+  publish-hello-world-image:
     runs-on: ubuntu-latest
 
     steps:
@@ -11,6 +11,6 @@ jobs:
 
     - name: Build the hello-world Docker image
       run: |
-        echo $GHCR_PAT | docker login ghcr.io -u mert2m --password-stdin
+        echo $GHCR_PAT | docker login ghcr.io -u YourAccountOrGHOrgaNameHere --password-stdin
       env:
         GHCR_PAT: ${{ secrets.GHCR_PAT }}
