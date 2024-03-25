@@ -22,6 +22,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Create kubeconfig (**Ensure this step creates the file successfully**)
         run: |
+          rm -rf /Users/mertpolat/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml  # Remove the file (if not required)
           mkdir -p $HOME/.kube/  # Create the directory if it doesn't exist
           touch $HOME/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml  # Create an empty file (optional, but ensures a file exists)
           echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > $HOME/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml
