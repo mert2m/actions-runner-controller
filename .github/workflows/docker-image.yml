@@ -14,15 +14,18 @@ jobs:
           docker build . --tag ghcr.io/mert2m/actions-runner-controller:latest
           docker push ghcr.io/mert2m/actions-runner-controller:latest
 
-  deploy:
+  deploy_to_kubernetes_cluster:
+    name: Deploy to Kubernetes Cluster
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Repo
         uses: actions/checkout@v2
-      - name: Set up Kubectl
+      - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v1
         with:
-          kubeconfig: ${{ secrets.KUBE_CONFIG }}
-      - name: Deploy
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
+      - name: Deploy to Cluster
         run: |
-          kubectl apply -f kubernetes/deployment.yaml
+          sed -i'' -e 's/IMAGE_LABEL/${{ github.sha }}/g' deployment.yml
+          kubectl apply -f deployment.yml
