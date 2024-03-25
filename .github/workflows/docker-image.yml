@@ -20,11 +20,19 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Install kubectl
+      uses: azure/kubectl@v1
+      with:
+        version: latest
+
     - name: Create kubeconfig
       run: |
         mkdir ${HOME}/.kube
         echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${HOME}/.kube/config
+
     - name: Use context
       run: kubectl config use-context kind-kind-for-ingress
+
     - name: Deploy to K8s
-      run: kubectl apply -f .k8s/task-deployment-service
+      run: kubectl apply -f .k8s/
