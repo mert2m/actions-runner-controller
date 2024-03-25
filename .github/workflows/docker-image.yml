@@ -1,4 +1,4 @@
-name: Deploy Images to GHCR
+name: Push Docker Image to GHCR
 
 on:
   push:
@@ -7,23 +7,21 @@ on:
   workflow_dispatch:
 
 jobs:
-      push-store-image:
-        runs-on: ubuntu-latest
-        defaults:
-          run:
-            working-directory: './Store'
-        steps:
-          - name: 'Checkout GitHub Action'
-            uses: actions/checkout@main
+  push-store-image:
+    runs-on: ubuntu-latest
 
-          - name: 'Login to GitHub Container Registry'
-            uses: docker/login-action@v1
-            with:
-              registry: ghcr.io
-              username: ${{github.actor}}
-              password: ${{secrets.GITHUB_TOKEN}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-          - name: 'Build Inventory Image'
-            run: |
-              docker build . --tag ghcr.io/<your-GitHub-username>/store:latest
-              docker push ghcr.io/<your-GitHub-username>/store:latest
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          docker build . --tag ghcr.io/${{ github.repository_owner }}/store:latest
+          docker push ghcr.io/${{ github.repository_owner }}/store:latest
