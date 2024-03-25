@@ -23,7 +23,9 @@ jobs:
     - name: Create kubeconfig
       run: |
         mkdir -p ${HOME}/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml
+        touch ${HOME}/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml
         echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > ${HOME}/Users/mertpolat/actions-runner/_work/_temp/kubeconfig_for_ingress.yaml
+
     - name: Use context
       run: kubectl config use-context kind-kind-for-ingress 
     - name: Deploy to K8s
