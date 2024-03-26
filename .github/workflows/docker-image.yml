@@ -19,4 +19,4 @@ jobs:
       steps:
       - name: deploy on your cluster
         run: |
-          kubectl --kubeconfig /Users/mertpolat/.kube apply -f task-deployment-service.yaml
+          kubectl --kubeconfig /Users/mertpolat/.kube/config apply -f task-deployment-service.yaml
