@@ -14,19 +14,9 @@ jobs:
           docker build . --tag ghcr.io/mert2m/actions-runner-controller:latest
           docker push ghcr.io/mert2m/actions-runner-controller:latest
 
-  deploy_to_kubernetes_cluster:
-    name: Deploy to Kubernetes Cluster
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v2
-      - name: Set Kubernetes Context
-        uses: azure/k8s-set-context@v1
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBE_CONFIG }} # Use secret (https://developer.github.com/actions/managing-workflows/storing-secrets/)
-      - name: Deploy to Cluster
+  build-and-deploy:
+      runs-on: self-hosted
+      steps:
+      - name: deploy on your cluster
         run: |
-          sed -i 's/IMAGE_LABEL/'"${{ github.sha }}"'/' deployment.yml
-      - name: Deploy to Cluster
-        run: kubectl apply -f deployment.yml
+          kubectl --kubeconfig /Users/mertpolat/actions-runner/_work/_temp apply -f task-deployment-service.yaml
