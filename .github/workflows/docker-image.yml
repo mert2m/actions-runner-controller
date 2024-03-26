@@ -15,8 +15,8 @@ jobs:
           docker push ghcr.io/mert2m/actions-runner-controller:latest
 
   build-and-deploy:
-      runs-on: self-hosted
-      steps:
+    runs-on: self-hosted
+    steps:
       - name: deploy on your cluster
         run: |
-          kubectl --kubeconfig /Users/mertpolat/.kube/config apply -f task-deployment-service.yaml
+          kubectl --kubeconfig /Users/mertpolat/.kube/config apply -f /Users/mertpolat/actions-runner/_work/_temp/task-deployment-service.yaml  # Replace with the correct path
