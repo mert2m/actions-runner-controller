@@ -19,4 +19,4 @@ jobs:
     steps:
       - name: deploy on your cluster
         run: |
-          kubectl --kubeconfig /Users/mertpolat/.kube/config apply -f /Users/mertpolat/actions-runner/_work/_temp/task-deployment-service.yaml  # Replace with the correct path
+          kubectl --kubeconfig /Users/mertpolat/.kube/config apply -f /Users/mertpolat/actions-runner/_work/actions-runner-controller/actions-runner-controller/deployment.yaml  
